@@ -162,7 +162,6 @@ function readResponseAsBlob(response) {
 }
 
 function fetchImage() {
-  // TODO
   fetch("examples/fetching.jpg")
     .then(readResponseAsBlob)
     .then(showImage)
@@ -195,7 +194,6 @@ function readResponseAsText(response) {
 }
 
 function fetchText() {
-  // TODO
   fetch("examples/words.txt")
     .then(readResponseAsText)
     .then(showText)
@@ -210,3 +208,49 @@ the innerHTML attribute, be careful. This can expose your site to
 cross-site scripting attacks!
 
 [Response Text](https://developer.mozilla.org/en-US/docs/Web/API/Body/text)
+
+## Using HEAD requests
+
+```
+// HEAD request ----------
+function headerContentLength(response) {
+  return response.headers.get("Content-Length");
+}
+
+function headRequest() {
+  fetch("examples/words.txt", {
+    method: "HEAD"
+  })
+    .then(headerContentLength)
+    .then(showText)
+    .catch(logError);
+}
+const headButton = document.getElementById("head-btn");
+headButton.addEventListener("click", headRequest);
+```
+
+[Headers](https://developer.mozilla.org/en-US/docs/Web/API/Response/headers)
+[headers.get()](https://developer.mozilla.org/en-US/docs/Web/API/Headers/get)
+[Fetch Signature](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch)
+
+## Using POST requests
+
+```
+function postRequest() {
+  // use the FormData interface to easily grab data from forms.
+  const formData = new FormData(document.getElementById("msg-form"));
+  fetch("http://localhost:5000/", {
+    method: "POST",
+    body: formData
+  })
+    .then(validateResponse)
+    .then(readResponseAsText)
+    .then(showText)
+    .catch(logError);
+}
+const postButton = document.getElementById("post-btn");
+postButton.addEventListener("click", postRequest);
+
+```
+
+[FormData](https://developer.mozilla.org/en-US/docs/Web/API/FormData)
