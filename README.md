@@ -254,3 +254,44 @@ postButton.addEventListener("click", postRequest);
 ```
 
 [FormData](https://developer.mozilla.org/en-US/docs/Web/API/FormData)
+
+## CORS and custom headers
+
+```
+function postRequest() {
+  // use the FormData interface to easily grab data from forms.
+  const formData = new FormData(document.getElementById("msg-form"));
+  fetch("http://localhost:5001/", {
+    method: "POST",
+    body: formData
+  })
+    .then(validateResponse)
+    .then(readResponseAsText)
+    .then(showText)
+    .catch(logError);
+}
+const postButton = document.getElementById("post-btn");
+postButton.addEventListener("click", postRequest);
+```
+
+error: \*\*\*\* has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource
+
+```
+function postRequest() {
+  // use the FormData interface to easily grab data from forms.
+  const formData = new FormData(document.getElementById("msg-form"));
+  fetch("http://localhost:5001/", {
+    method: "POST",
+    body: formData,
+    mode: "no-cors"
+  })
+    .then(logResult)
+    .catch(logError);
+}
+const postButton = document.getElementById("post-btn");
+postButton.addEventListener("click", postRequest);
+```
+
+Using mode: no-cors allows fetching an opaque response. This allows use to get a response, but prevents accessing the response with JavaScript (which is why we can't use validateResponse, readResponseAsText, or showResponse). The response can still be consumed by other APIs or cached by a service worker.
+
+[cross-origin resource sharing](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
