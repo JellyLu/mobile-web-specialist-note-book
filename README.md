@@ -295,3 +295,279 @@ postButton.addEventListener("click", postRequest);
 Using mode: no-cors allows fetching an opaque response. This allows use to get a response, but prevents accessing the response with JavaScript (which is why we can't use validateResponse, readResponseAsText, or showResponse). The response can still be consumed by other APIs or cached by a service worker.
 
 [cross-origin resource sharing](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
+
+# Progressive Web Apps
+
+## Scripting the service worker
+
+```
+// in .html file <script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("service-worker.js", {
+          scope: "/below/"
+        })
+      .then(registration => {
+        console.log("Service worker is registered", registration);
+      })
+      .catch(error => {
+        console.log("Registration failed: ", error);
+      });
+  });
+}
+```
+
+The above code registers the service-worker.js file as a service worker.
+It first checks whether the browser supports service workers.
+
+```
+// install new service worker
+self.addEventListener("install", event => {
+  console.log("Service Worker is installing...");
+  self.skipWaiting();
+});
+
+// activate the new service worker when previous service worker is not used anymore
+self.addEventListener("activate", event => {
+  console.log("Service Worker is activating...");
+});
+
+```
+
+The browser detects a byte difference between the new and existing
+service worker file (because of the added comment),
+so the new service worker is installed.
+Since only one service worker can be active at a time (for a given scope),
+even though the new service worker is installed, it isn't activated until
+the existing service worker is no longer in use.
+By closing all pages under the old service worker's control,
+we are able to activate the new service worker.
+
+The browser detects a byte difference between the new and existing
+service worker file (because of the added comment),
+so the new service worker is installed.
+Since only one service worker can be active at a time (for a given scope),
+even though the new service worker is installed,
+it isn't activated until the existing service worker is no longer in use.
+By closing all pages under the old service worker's control,
+we are able to activate the new service worker.
+
+[service worker lifecycle](https://developers.google.com/web/fundamentals/primers/service-workers/lifecycle)
+[navigator.serviceWorker.register()](https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerContainer/register)
+
+## Caching files with the service worker
+
+```
+const cacheName = "cache-sw-v2";
+const urlsToCache = [
+  "/",
+  "/style/main.css",
+  "/images/birds_medium.jpg",
+  "/images/horses_medium.jpg",
+  "/images/still_life_medium.jpg",
+  "/images/volt_medium.jpg",
+  "/pages/404.html",
+  "/pages/offline.html",
+  "/index.html"
+  // other dynamic urls
+];
+
+self.addEventListener("install", event => {
+  self.skipWaiting();
+  console.log("installing...");
+  event.waitUntil(
+    caches.open(cacheName).then(cache => {
+      cache.addAll(
+        urlsToCache.map(url => {
+          return new Request(url, { mode: "no-cors" });
+        })
+      );
+    })
+  );
+});
+```
+
+```
+self.addEventListener("activate", event => {
+  console.log("activating...");
+  const cacheWhitelist = [cacheName];
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cache => {
+          if (cacheWhitelist.indexOf(cache) === -1) {
+            caches.delete(cache);
+          }
+        })
+      );
+    })
+  );
+});
+```
+
+We delete old caches in the activate event to ensure that
+we aren't deleting caches before the new service worker
+has taken over the page (in case the new service worker
+activation fails, in which case we don't want to remove
+the existing service worker's caches). To remove outdated
+caches, we create an array of caches that are currently in
+use and delete all other caches.
+
+```
+self.addEventListener("fetch", event => {
+  event.respondWith(
+    caches
+      .match(event.request)
+      .then(response => {
+        if (response) {
+          console.log("load cache", event.request.url);
+          return response;
+        }
+        return fetch(event.request).then(res => {
+          console.log("fetching ", event.request.url);
+          if (res.status === 404) {
+            console.log("reponse 404");
+            return caches.match("/pages/404.html");
+          }
+          return caches.open(cacheName).then(cache => {
+            cache.put(event.request, res.clone());
+            return res;
+          });
+        });
+      })
+      .catch(error => {
+        console.log("fetch error ", error);
+        return caches.match("pages/offline.html");
+      })
+  );
+});
+```
+
+We need to pass a clone of the response to cache.put,
+because the response is a stream and can only be read once
+
+[install event](https://developer.mozilla.org/en-US/docs/Web/API/InstallEvent)
+[ExtendableEvent.waitUntil](https://developer.mozilla.org/en-US/docs/Web/API/ExtendableEvent/waitUntil)
+[FetchEvent.respondWith](https://developer.mozilla.org/en-US/docs/Web/API/FetchEvent/respondWith)
+[Cache.match](https://developer.mozilla.org/en-US/docs/Web/API/Cache/match)
+[Cache.put](https://developer.mozilla.org/en-US/docs/Web/API/Cache/put)
+[What happens when you read a response](https://jakearchibald.com/2014/reading-responses/)
+
+## Add to Home Screen
+
+```
+// manifest.json
+{
+  "name": "Space Missions",
+  "short_name": "Space Missions",
+  "lang": "en-US",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "theme_color": "#FF9800",
+  "background_color": "#FF9800",
+  "icons": [
+    {
+      "src": "images/touch/icon-128x128.png",
+      "sizes": "128x128"
+    },
+    {
+      "src": "images/touch/icon-192x192.png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "images/touch/icon-256x256.png",
+      "sizes": "256x256"
+    },
+    {
+      "src": "images/touch/icon-384x384.png",
+      "sizes": "384x384"
+    },
+    {
+      "src": "images/touch/icon-512x512.png",
+      "sizes": "512x512"
+    }
+  ]
+}
+```
+
+```
+<link rel="manifest" href="manifest.json">
+
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="application-name" content="Space Missions">
+<meta name="apple-mobile-web-app-title" content="Space Missions">
+<meta name="theme-color" content="#FF9800">
+<meta name="msapplication-navbutton-color" content="#FF9800">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="msapplication-starturl" content="/index.html">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<link rel="icon" sizes="128x128" href="/images/touch/icon-128x128.png">
+<link rel="apple-touch-icon" sizes="128x128" href="/images/touch/icon-128x128.png">
+<link rel="icon" sizes="192x192" href="icon-192x192.png">
+<link rel="apple-touch-icon" sizes="192x192" href="/images/touch/icon-192x192.png">
+<link rel="icon" sizes="256x256" href="/images/touch/icon-256x256.png">
+<link rel="apple-touch-icon" sizes="256x256" href="/images/touch/icon-256x256.png">
+<link rel="icon" sizes="384x384" href="/images/touch/icon-384x384.png">
+<link rel="apple-touch-icon" sizes="384x384" href="/images/touch/icon-384x384.png">
+<link rel="icon" sizes="512x512" href="/images/touch/icon-512x512.png">
+<link rel="apple-touch-icon" sizes="512x512" href="/images/touch/icon-512x512.png">
+```
+
+#### Activating the install prompt
+
+```
+// Add an "Install app" button and banner to the top of index.html
+// (just after the <main> tag)
+<section id="installBanner" class="banner">
+    <button id="installBtn">Install app</button>
+</section>
+```
+
+```
+// main.css
+.banner {
+  align-content: center;
+  display: none;
+  justify-content: center;
+  width: 100%;
+}
+```
+
+```
+// index.html
+<script>
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', event => {
+
+      // Prevent Chrome 67 and earlier from automatically showing the prompt
+      event.preventDefault();
+
+      // Stash the event so it can be triggered later.
+      deferredPrompt = event;
+
+      // Attach the install prompt to a user gesture
+      document.querySelector('#installBtn').addEventListener('click', event => {
+
+        // Show the prompt
+        deferredPrompt.prompt();
+
+        // Wait for the user to respond to the prompt
+        deferredPrompt.userChoice
+          .then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+              console.log('User accepted the A2HS prompt');
+            } else {
+              console.log('User dismissed the A2HS prompt');
+            }
+            deferredPrompt = null;
+          });
+      });
+
+      // Update UI notify the user they can add to home screen
+      document.querySelector('#installBanner').style.display = 'flex';
+    });
+  </script>
+```
