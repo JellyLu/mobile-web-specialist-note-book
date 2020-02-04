@@ -571,3 +571,187 @@ because the response is a stream and can only be read once
     });
   </script>
 ```
+
+# IndexedDB
+
+## check whether browser supports IndexedDB
+
+```
+if (!("indexedDB" in window)) {
+  console.log("This browser doesn't support IndexedDB");
+  return;
+}
+```
+
+```
+var dbPromise = idb.open("couches-n-things", 2, upgradeDB => {
+  switch (upgradeDB.oldVersion) {
+    case 0:
+
+    case 1: {
+      console.log("creating products object store");
+      upgradeDB.createObjectStore("products", { keyPath: "id" });
+    }
+    default:
+  }
+});
+```
+
+idb.open takes a database name, version number, and optional callback
+function for performing database updates (not included in the above code).
+The version number determines whether the upgrade callback function is called.
+If the version number is greater than the version number of the database
+existing in the browser, then the upgrade callback is executed.
+
+[idb](https://github.com/jakearchibald/idb)
+[createObjectStore](https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase/createObjectStore)
+
+#### add data to objectStore
+
+```
+dbPromise.then(db => {
+  const tx = db.transaction("products", "readwrite");
+  const store = tx.objectStore("products");
+
+  return Promise.all(
+    products.map(product => {
+      return store.add(product);
+    })
+  )
+    .then(() => {
+      console.log("added all products");
+    })
+    .catch(error => {
+      console.log("add product error: ", error);
+      tx.abort();
+    });
+});
+```
+
+All database operations must be carried out within a transaction.
+
+We add each object to the store inside a Promise.all.
+This way if any of the add operations fail, we can catch
+the error and abort the transaction. Aborting the transaction
+rolls back all the changes that happened in the transaction
+so that if any of the events fail to add, none of them will
+be added to the object store. This ensures the database is
+not left in a partially updated state.
+
+Note: Specify the transaction mode as readwrite when
+making changes to the database (that is, for changes
+that use the `add`, `put`, or `delete` methods).
+
+[transaction](https://developer.mozilla.org/en-US/docs/Web/API/IDBTransaction)
+[add](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/add)
+
+#### add index by name for prodcuts
+
+```
+var dbPromise = idb.open("couches-n-things", 3, upgradeDB => {
+  switch (upgradeDB.oldVersion) {
+    case 0:
+
+    case 1: {
+      console.log("creating products object store");
+      upgradeDB.createObjectStore("products", { keyPath: "id" });
+    }
+    case 2: {
+      console.log("creating a name index");
+      const store = upgradeDB.transaction.objectStore("products");
+      store.createIndex("name", "name", { unique: true });
+    }
+    default:
+  }
+});
+```
+
+[index](https://developer.mozilla.org/en-US/docs/Web/API/IDBIndex)
+[createIndex](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/createIndex)
+
+#### Searching the database
+
+```
+return dbPromise.then(db => {
+  const tx = db.transaction("products", "readonly");
+  const store = tx.objectStore("products");
+  const index = store.index("name");
+  return index.get(key);
+});
+```
+
+```
+// create range
+let range;
+if (lower !== "" && upper !== "") {
+  range = IDBKeyRange.bound(lowerNum, upperNum);
+} else if (lower === "") {
+  range = IDBKeyRange.upperBound(upperNum);
+} else {
+  range = IDBKeyRange.lowerBound(lowerNum);
+}
+```
+
+```
+// create range
+let range = IDBKeyRange.only(key);
+```
+
+```
+// show cursor
+var s = "";
+function showRange(cursor) {
+  if (!cursor) return;
+  console.log("cursor at: ", cursor.value.name);
+  s += "<h2>Price - " + cursor.value.price + "</h2> <p>";
+  for (let field in cursor.value) {
+    s += field + "=" + cursor.value[field] + "</br>";
+  }
+  s += "</p>";
+  return cursor.continue().then(showRange);
+}
+
+dbPromise
+  .then(db => {
+    const tx = db.transaction("products", "readonly");
+    const store = tx.objectStore("products");
+    const index = store.index("price");
+    return index.openCursor(range);
+  })
+  .then(showRange)
+  .then(() => {
+    if (s === "") {
+      s = "No result";
+    }
+    document.getElementById("results").innerHTML = s;
+  });
+```
+
+[get](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/get)
+
+[IDBCursor](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor)
+[IDBKeyRange](https://developer.mozilla.org/en-US/docs/Web/API/IDBKeyRange)
+[continue](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor/continue)
+
+```
+// get all
+
+dbPromise.then(function(db) {
+  // TODO 5.3 - use a cursor to display the orders on the page
+  const tx = db.transaction("orders", "readonly");
+  const store = tx.objectStore("orders");
+  return store.getAll();
+});
+
+```
+
+```
+// update all products items
+const tx = db.transaction("products", "readwrite");
+const store = tx.objectStore("products");
+return Promise.all(
+  products.map(product => {
+    store.put(product);
+  })
+).then(tx.complete);
+```
