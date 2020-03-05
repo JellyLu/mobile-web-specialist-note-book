@@ -755,3 +755,13 @@ return Promise.all(
   })
 ).then(tx.complete);
 ```
+
+## Promise
+
+A Promise is an object representing the eventual completion or failure of an
+asynchronous operation.
+
+[Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)
+[Promise Introduction](https://developers.google.com/web/fundamentals/primers/promises)
+[Promise All](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all)
+[Promise Race](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/race)
