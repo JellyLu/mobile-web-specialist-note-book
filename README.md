@@ -1201,3 +1201,63 @@ keyboard from randomly appearing.
 Note: Be careful using the autofocus attribute because it will steal
 keyboard focus and potentially preventing the backspace character
 from being used for navigation.
+
+# Accessibility
+
+Web pages and applications should be accessible to all users,
+including those with visual, motor, hearing, and cognitive impairments.
+Using HTML, CSS, JavaScript, you'll be asked to show you can integrate
+accessibility best practices into your web pages and applications by:
+
+- Using a logical tab order for tabbed navigation
+- Using skip navigation links to bypass navbars and asides
+- Avoiding hidden content on the page that impedes tab navigation
+- Using heading tags that provide a logical page structure
+- Using text alternatives to visual content, such as alt, <label>, aria-label, and aria-labelledby
+- Applying color contrast to all elements and following accessibility best practices
+- Sending timely alerts for urgent messages using aria-live
+- Using semantic markup to keep content and presentation separate when appropriate
+
+## Focus
+
+Focus determines where keyboard events go in the page at any given moment.
+Ensuring that you design your page with a logical tab order is an important step.
+There's generally no need to focus something if the user can't interact with it.
+
+Keyboard Accessible: Make all functionality available from a keyboard
+
+[Keyboard](https://webaim.org/standards/wcag/checklist#sc2.1.1)
+[Meaningful Sequence](https://webaim.org/standards/wcag/checklist#sc1.3.2)
+[airline site mockup page](http://udacity.github.io/ud891/lesson2-focus/01-basic-form/)
+
+- using only keyboard input, when you successfully complete the form with
+  no input errors and activate the Search button, the form will simply clear
+  and reset.
+- reading and navigation order, as determined by code order, should be
+  logical and intuitive.
+- should prevent the panel from gaining focus when it's off screen, and only
+  allow it to be focused when the user can interact with it.
+  - `document.activeElement` from the console to figure out which element
+    is currently focused.
+  - Once you know which off screen element is being focused, you can set it
+    to `display: none` or `visibility: hidden`, and then set it back
+    to `display: block` or `visibility: visible` before showing it to the user.
+- use the tabindex HTML attribute to explicitly set an element's (restrict it
+  to custom interactive controls) tab position
+- The element can be focused by pressing the Tab key, and the element can
+  be focused by calling its focus() method
+
+  - tabindex="0": Inserts an element into the natural tab order.
+  - tabindex="-1": Removes an element from the natural tab order, but the
+    element can still be focused by calling its focus() method
+  - Using a tabindex greater than 0 is considered an anti-pattern.
+  - Managing focus at the page level
+    - identify the selected content area, give it a tabindex of -1 so that it
+      doesn't appear in the natural tab order, and call its focus method
+  - Managing focus in components
+  - Modals and keyboard traps
+    - keyboard focus should never be locked or trapped at one particular page element.
+
+[Accessible Rich Internet Applications (ARIA) Authoring Practices guide](https://www.w3.org/TR/wai-aria-practices/)
+[No Keyboard Trap](https://webaim.org/standards/wcag/checklist#sc2.1.2)
+[Sample codebase](https://github.com/udacity/ud891.git)
