@@ -1034,3 +1034,170 @@ event.waitUntil(
 ```
 
 [openWindow](https://developer.mozilla.org/en-US/docs/Web/API/Clients/openWindow)
+
+## Create Amazing Forms
+
+### Design efficient forms
+
+- Use existing data to pre-populate fields and be sure to enable autofill.
+
+Make sure your forms have no repeated actions, only as many fields as necessary, and take advantage of autofill, so that users can easily complete forms with pre-populated data.
+
+- Use clearly-labeled progress bars to help users get through multi-part forms.
+
+Progress bars and menus should accurately convey overall progress through multi-step forms and processes.
+
+- Provide visual calendar so users don’t have to leave your site and jump to the calendar app on their smartphones.
+
+### Choose the best input type
+
+- Choose the most appropriate input type for your data to simplify input.
+
+| Input type     | note                                                                                                                                                                  |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| url            | URL. It must start with a valid URI scheme, for example http://, ftp:// or mailto:                                                                                    |
+| tel            | phone numbers. It does not enforce a particular syntax for validation, so if you want to ensure a particular format, you can use pattern.                             |
+| email          | email addresses, and hints that the @ should be shown on the keyboard by default. You can add the multiple attribute if more than one email address will be provided. |
+| search         | A text input field styled in a way that is consistent with the platform's search field.                                                                               |
+| number         | numeric input, can be any rational integer. Additionally, iOS requires using pattern="\d\*" to show the numeric keyboard.                                             |
+| range          | number input, but unlike the number input type, the value is less important. It is displayed to the user as a slider control.                                         |
+| datetime-local | a date and time value where the time zone provided is the local time zone.                                                                                            |
+| date           | a date (only) with no time zone provided.                                                                                                                             |
+| time           | a time (only) with no time zone provided.                                                                                                                             |
+| week           | a week (only) with no time zone provided.                                                                                                                             |
+| month          | a month (only) with no time zone provided.                                                                                                                            |
+| color          | For picking a color.                                                                                                                                                  |
+
+Caution: Remember to keep localization in mind when choosing an input type, some locales use a dot (.) as a separator instead of a comma (,)
+
+- Offer suggestions as the user types with the datalist element.
+
+datalist lets the browser suggest autocomplete options as the user types.
+Unlike select elements where users must scan long lists to find the value
+they're looking for, and limiting them only to those lists, datalist element
+provides hints as the user types.
+
+```
+<label for="frmFavChocolate">Favorite Type of Chocolate</label>
+<input type="text" name="fav-choc" id="frmFavChocolate" list="chocType">
+<datalist id="chocType">
+  <option value="white">
+  <option value="milk">
+  <option value="dark">
+</datalist>
+```
+
+Note: The datalist values are provided as suggestions, and users are not
+restricted to the suggestions provided.
+
+### Label and name inputs properly
+
+- Always use labels on form inputs, and ensure they're visible when the field is in focus.
+
+The label element provides direction to the user, telling them what information
+is needed in a form element.
+Applying labels to form elements also helps to improve the touch target size:
+the user can touch either the label or the input in order to place focus on the
+input element.
+
+```
+<label for="frmAddressS">Address</label>
+<input
+  type="text"
+  name="ship-address"
+  required
+  id="frmAddressS"
+  placeholder="123 Any Street"
+  autocomplete="shipping
+  street-address"
+>
+
+// or
+<label>
+  Address
+  <input
+    type="text"
+    name="ship-address"
+    required
+    placeholder="123 Any Street"
+    autocomplete="shipping
+    street-address"
+  >
+</label>
+```
+
+Labels and inputs should be large enough to be easy to press.
+In portrait viewports, field labels should be above input elements,
+and beside them in landscape. Ensure field labels and the corresponding
+input boxes are visible at the same time. Be careful with custom scroll
+handlers that may scroll input elements to the top of the page hiding
+the label, or labels placed below input elements may be covered by the
+virtual keyboard.
+
+- Use placeholders to provide guidance about what you expect.
+
+The placeholder attribute provides a hint to the user about what's expected
+in the input, typically by displaying the value as light text until the user
+starts typing in the element.
+
+- To help the browser auto-complete the form, use established name's for elements and include the autocomplete attribute.
+
+give hints to the browser by providing both the name attribute and the
+autocomplete attribute on each input element.
+
+Note: Chrome requires input elements to be wrapped in a <form> tag to
+enable auto-complete. If they're not wrapped in a form tag, Chrome will
+offer suggestions, but will not complete the form.
+
+｜ Content type ｜ name attribute ｜ autocomplete attribute ｜
+｜-｜-｜-｜
+｜ Name ｜ name fname mname lname ｜
+
+- name (full name)
+- given-name (first name)
+- additional-name (middle name)
+- family-name (last name)｜
+  ｜ Email ｜ email| email|
+  ｜ Address ｜ address city region province state zip zip2 postal country ｜- For one address input:
+  street-address
+- For two address inputs:
+  address-line1
+  address-line2
+- address-level1 (state or province)
+- address-level2 (city)
+- postal-code (zip code)
+- country ｜
+  ｜ Phone ｜ phone mobile country-code area-code exchange suffix ext ｜ tel ｜
+  ｜ Credit Card ｜ ccname cardnumber cvc ccmonth ccyear exp-date card-type ｜
+  cc-name
+  cc-number
+  cc-csc
+  cc-exp-month
+  cc-exp-year
+  cc-exp
+  cc-type
+  ｜
+  ｜ Usernames ｜ username ｜ username ｜
+  ｜ Passwords ｜ password ｜
+
+  - current-password (for sign-in forms)
+  - new-password (for sign-up and password-change forms)｜
+
+Note: Use either only street-address or both address-line1 and
+address-line2. address-level1 and address-level2 are only necessary
+if they're required for your address format.
+
+On some forms, for example the Google home page where the only thing
+you want the user to do is fill out a particular field, you can add
+the autofocus attribute.
+
+```
+  <input type="text" autofocus ...>
+```
+
+Note: Mobile browsers ignore the autofocus attribute, to prevent the
+keyboard from randomly appearing.
+
+Note: Be careful using the autofocus attribute because it will steal
+keyboard focus and potentially preventing the backspace character
+from being used for navigation.
