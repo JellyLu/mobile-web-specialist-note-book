@@ -765,3 +765,272 @@ asynchronous operation.
 [Promise Introduction](https://developers.google.com/web/fundamentals/primers/promises)
 [Promise All](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all)
 [Promise Race](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/race)
+
+## Push Notification
+
+### Notifications API
+
+```
+// Check for support
+if (!("Notification" in window)) {
+  console.log("This browser does not support notifications");
+  return;
+}
+```
+
+```
+// Request permission
+Notification.requestPermission(status => {
+  console.log("Notification permission status", status);
+});
+```
+
+Note: In production, requesting permissions on page load is a poor user experience. Rather, permissions are better requested when a user opts into a specific feature that requires some permission.
+
+```
+// Display the notification
+if (Notification.permission === "granted") {
+  const options = {
+    body: "Buzz! Buzz!",
+    icon: "../images/notification-flat.png",
+    vibrate: [200, 100, 200, 100, 200, 100, 200],
+    tag: "notify-me-sample",
+    data: {
+      dateOfArrival: Date.now(),
+      primaryKey: 1
+    },
+    actions: [
+      {
+        action: "explore",
+        title: "Go to the site",
+        icon: "../images/checkmark.png"
+      },
+      {
+        action: "close",
+        title: "Close the notification",
+        icon: "../images/xmark.png"
+      }
+    ]
+  };
+  navigator.serviceWorker.getRegistration().then(function(registration) {
+    registration.showNotification("Notify me", options);
+  });
+}
+
+
+function showNotification() {
+  Notification.requestPermission(function(result) {
+    if (result === 'granted') {
+      navigator.serviceWorker.ready.then(function(registration) {
+        registration.showNotification('Vibration Sample', {
+          body: 'Buzz! Buzz!',
+          icon: '../images/touch/chrome-touch-icon-192x192.png',
+          vibrate: [200, 100, 200, 100, 200, 100, 200],
+          tag: 'vibration-sample',
+          data: {
+            dateOfArrival: Date.now(),
+            primaryKey: 1
+          },
+        });
+      });
+    }
+  });
+}
+```
+
+```
+// Service Worker handle notification close
+self.addEventListener("notificationclose", event => {
+  const notification = event.notification;
+  const dateOfArrival = notification.data.dateOfArrival;
+  console.log("notification close, dateOfArrival - ", dateOfArrival);
+});
+```
+
+```
+// Service Worker handle notification click
+self.addEventListener("notificationclick", event => {
+  const notifcation = event.notification;
+  const primaryKey = notifcation.data.primaryKey;
+  const action = event.action;
+  if (action === "explore") {
+    clients.openWindow(`samples/page${primaryKey}.html`);
+  } else {
+    clients.openWindow("https://google.com");
+  }
+});
+```
+
+```
+self.addEventListener("push", event => {
+  let body;
+  if (event.data) {
+    body = event.data.text();
+  } else {
+    body = "Default body";
+  }
+  const options = {
+    body: body,
+    icon: "../images/notification-flat.png",
+    vibrate: [200, 100, 200, 100, 200, 100, 200],
+    tag: "push-me-sample",
+    data: {
+      dateOfArrival: Date.now(),
+      primaryKey: 2
+    },
+    actions: [
+      {
+        action: "explore",
+        title: "Go to the site",
+        icon: "../images/checkmark.png"
+      },
+      {
+        action: "close",
+        title: "Close the notification",
+        icon: "../images/xmark.png"
+      }
+    ]
+  };
+
+  event.waitUntil(
+    clients.matchAll().then(client => {
+      console.log("client----", client);
+      if (client.length === 0) {
+        self.registration.showNotification("Push me", options);
+      } else {
+        console.log("Application is already open!");
+      }
+    })
+  );
+});
+```
+
+[Notifications API](https://developer.mozilla.org/en-US/docs/Web/API/Notifications_API)
+[showNotification](https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/showNotification)
+[openWindow](https://developer.mozilla.org/en-US/docs/Web/API/Clients/openWindow)
+
+### Push API
+
+Generate the VAPID Keys
+
+- `npm install web-push -g`
+
+- `web-push generate-vapid-keys [--json]`
+
+```
+function subscribeUser() {
+  // subscribe to the push service
+  // applicationServerPublicKey is YOUR_VAPID_PUBLIC_KEY
+
+  const applicationServerKey = urlB64ToUint8Array(applicationServerPublicKey);
+  swRegistration.pushManager
+    .subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: applicationServerKey
+    })
+    .then(subscription => {
+      console.log("User is subscribing - ", subscription);
+      updateSubscriptionOnServer(subscription);
+      isSubscribed = true;
+      updateBtn();
+    })
+    .catch(error => {
+      if (Notification.permission === "denied") {
+        console.warn("Permission for notifications was denied");
+      } else {
+        console.error("Failed to subscribe the user: ", error);
+      }
+      updateBtn();
+    });
+}
+```
+
+```
+function unsubscribeUser() {
+  // unsubscribe from the push service
+  swRegistration.pushManager
+    .getSubscription()
+    .then(subscription => {
+      if (subscription) {
+        return subscription.unsubscribe();
+      }
+    })
+    .catch(error => {
+      console.error("Error unsubscribing", error);
+    })
+    .then(() => {
+      updateSubscriptionOnServer(null);
+      isSubscribed = false;
+      updateBtn();
+    });
+}
+```
+
+[Push API](https://developer.mozilla.org/en-US/docs/Web/API/Push_API)
+[Push Event](https://developer.mozilla.org/en-US/docs/Web/API/PushEvent)
+[Using VAPID](https://blog.mozilla.org/services/2016/04/04/using-vapid-with-webpush/)
+
+### Best practices
+
+- group messages
+  Whenever you create a notification with a tag and there is already a
+  notification with the same tag visible to the user, the system
+  automatically replaces it without creating a new notification.
+
+  Your can use this to group messages that are contextually relevant
+  into one notification. This is a good practice if your site creates
+  many notifications that would otherwise become overwhelming to the user.
+
+- Hide notifications on page focus
+  If there are several open notifications originating from our
+  app, we can close them all when the user clicks on one.
+
+```
+// notificationclick
+self.registration.getNotifications().then(notifications => {
+  notifications.forEach(notification => {
+    notification.close();
+  });
+});
+```
+
+Note: If you don't want to clear out all of the notifications,
+you can filter based on the tag attribute by passing the tag
+into the getNotifications function. See the getNotifications
+reference on MDN for more information.
+
+[getNotifications](https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/getNotifications)
+
+- Notifications and tabs
+
+Note: The clients.openWindow method can only open a window
+when called as the result of a notificationclick event.
+Therefore, we need to wrap the clients.matchAll() method
+in a waitUntil, so that the event does not complete before
+openWindow is called. Otherwise, the browser throws an error.
+
+Get all the clients of the service worker and assign the
+first "visible" client to the client variable. Then we open
+the page in this client. If there are no visible clients,
+open the page in a new tab.
+
+```
+// notificationclick
+event.waitUntil(
+  clients.matchAll().then(clis => {
+    const client = clis.find(c => {
+      return c.visibilityState === 'visible';
+    });
+    if (client !== undefined) {
+      client.navigate('samples/page' + primaryKey + '.html');
+      client.focus();
+    } else {
+      // there are no visible windows. Open one.
+      clients.openWindow('samples/page' + primaryKey + '.html');
+      notification.close();
+    }
+  })
+);
+```
+
+[openWindow](https://developer.mozilla.org/en-US/docs/Web/API/Clients/openWindow)
