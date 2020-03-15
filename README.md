@@ -1261,3 +1261,144 @@ Keyboard Accessible: Make all functionality available from a keyboard
 [Accessible Rich Internet Applications (ARIA) Authoring Practices guide](https://www.w3.org/TR/wai-aria-practices/)
 [No Keyboard Trap](https://webaim.org/standards/wcag/checklist#sc2.1.2)
 [Sample codebase](https://github.com/udacity/ud891.git)
+
+## Semantics Build-in
+
+GUI affordances are thus specifically designed to be unambiguous:
+buttons, check boxes, and scroll bars are meant to convey their usage with
+as little training as possible.
+
+This non-visual exposure of an affordance's use is called its semantics.
+
+screen reader tells you some information about each interface element.
+
+- The element's role or type, if it is specified (it should be).
+- The element's name, if it has one (it should).
+- The element's value, if it has one (it may or may not).
+- The element's state, e.g., whether it is enabled or disabled (if applicable).
+
+Just as the rendering engine uses the native code to construct a
+visual interface, the screen reader uses the metadata in the DOM
+nodes to construct an accessible version
+
+[Blind people use VoiceOver](https://www.youtube.com/watch?v=QW_dUs9D1oQ)
+[ChromeVox lite demo page](http://udacity.github.io/ud891/lesson3-semantics-built-in/02-chromevox-lite/)
+
+The accessibility tree is what most assistive technologies interact with.
+
+- making sure that the important elements in the page have the correct
+  `accessible roles`, `states`, and `properties`, and that we specify
+  `accessible names` and `descriptions`.
+- Using a native element also has the benefit of taking care of keyboard interactions for us
+- screen readers will announce an element's `role`, `name`, `state`, and `value`
+- providing text alternatives for any non-text content is
+  [the very first item on the WebAIM checklist](https://webaim.org/standards/wcag/checklist#g1.1).
+
+To associate a label with an element, either
+
+```
+// Place the input element inside a label element
+<label>
+  <input type="checkbox">Receive promotional offers?
+</label>
+```
+
+```
+// Use the label's for attribute and refer to the element's id
+<input id="promo" type="checkbox">
+<label for="promo">Receive promotional offers?</label>
+```
+
+#### Text Alternatives for Images
+
+- `alt` allows you to specify a simple string to be used
+  any time the image isn't available
+- `alt` differs from `title`, or any type of caption, in
+  that it is only used if the image is not available.
+- all images should have an alt attribute, but they need not all have text.  
+  Important images should have descriptive alt text that succinctly describes
+  what the image is, while decorative images should have empty alt attributes
+  — that is, `alt=""`.
+
+#### Navigating content
+
+An appropriate heading structure is more important than ever.[DOM order mater]
+the heading levels are nested to indicate parent-child relationships among content blocks.
+
+- [Semantic markup is used to designate headings](https://webaim.org/standards/wcag/checklist#sc1.3.1)
+- [heading structure as a technique for bypassing blocks of content](https://webaim.org/standards/wcag/checklist#sc2.4.1)
+- []()
+
+#### ARIA (Accessible Rich Internet Applications)
+
+Using ARIA attributes, can give the element the missing information
+so the screen reader can properly interpret it.
+
+ARIA doesn't augment any of the element's inherent behavior; it won't make
+the element focusable or give it keyboard event listeners.
+
+ARIA can add extra label and description text that is only exposed to
+assistive technology APIs
+ARIA can express semantic relationships between elements that extend
+the standard parent/child connection
+ARIA can make parts of the page "live", so they immediately inform
+assistive technology when they change.
+
+- [ARIA in HTML](https://www.w3.org/TR/html-aria/#sec-strong-native-semantics)
+- [ ARIA Authoring Practices document](https://www.w3.org/TR/wai-aria-practices-1.1/)
+- [ARIA guideline](https://www.w3.org/TR/wai-aria/)
+
+- `aria-label` allows us to specify a string to be used as the accessible label.
+  This overrides any other native labeling mechanism.
+- `aria-labelledby` allows us to specify the ID of another element in the DOM
+  as an element's label.
+  `aria-labelledby` overrides all other name sources for an element(like `aria-label` and `label`)
+
+  Relationships Attributes:
+
+  - `aria-owns`
+  - `aria-activedescendant`
+  - `aria-labelledby`
+  - `aria-describedby`
+  - `aria-controls`
+  - `aria-posinset`
+  - `aria-setsize`
+
+Hide Content
+
+Do not use this CSS if you want the content to be read by a screen reader:
+`visibility: hidden`
+`display: none`
+`width:0px, height:0px or other 0 pixel sizing techniques`
+
+Visually hiding content that will be read by a screen reader:
+`text-indent: -10000px;`
+`hidden`
+
+```
+.hidden {
+  position:absolute;
+  left:-10000px;
+  top:auto;
+  width:1px;
+  height:1px;
+  overflow:hidden;
+}
+
+<div class="hidden">This text is hidden.</div>
+
+```
+
+```
+<label for="password">Password *</label>
+<input id="password" type="password" aria-describedby="pw-help">
+<div id="pw-help" hidden>password must be more than 8 digits</div>
+```
+
+[Techniques for hiding text](https://webaim.org/techniques/css/invisiblecontent/#techniques)
+
+# SEO
+
+[Document does not have a meta description](https://web.dev/meta-description/?utm_source=lighthouse&utm_medium=devtools)
+
+`<meta name="Description" content="Put your description here.">`
