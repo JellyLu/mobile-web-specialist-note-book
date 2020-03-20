@@ -1397,8 +1397,77 @@ Visually hiding content that will be read by a screen reader:
 
 [Techniques for hiding text](https://webaim.org/techniques/css/invisiblecontent/#techniques)
 
-# SEO
+#### SEO
 
 [Document does not have a meta description](https://web.dev/meta-description/?utm_source=lighthouse&utm_medium=devtools)
 
 `<meta name="Description" content="Put your description here.">`
+
+#Perfomance
+
+###Optimize JavaScript Execution
+
+- Avoid setTimeout or setInterval for visual updates;
+  always use requestAnimationFrame instead.
+  The only way to guarantee that your JavaScript will run at the start of
+  a frame is to use requestAnimationFrame.
+- Move long-running JavaScript off the main thread to Web Workers.
+- Use micro-tasks to make DOM changes over several frames.
+- Use Chrome DevTools’ Timeline and JavaScript Profiler to assess the impact of JavaScript.
+
+```
+/**
+ * If run as a requestAnimationFrame callback, this
+ * will be run at the start of the frame.
+ */
+function updateScreen(time) {
+  // Make visual updates here.
+}
+
+requestAnimationFrame(updateScreen);
+```
+
+```
+var dataSortWorker = new Worker("sort-worker.js");
+dataSortWorker.postMesssage(dataToSort);
+
+// The main thread is now free to continue working on other things...
+// ***Web Worker do NOT have access to DOM.***
+
+dataSortWorker.addEventListener('message', function(evt) {
+   var sortedData = evt.data;
+   // Update data on screen...
+});
+```
+
+```
+// must be on the main thread
+// segment the larger task into micro-tasks, each taking no longer than a few
+// milliseconds, and run inside of requestAnimationFrame handlers across each frame.
+var taskList = breakBigTaskIntoMicroTasks(monsterTaskList);
+requestAnimationFrame(processTaskList);
+
+function processTaskList(taskStartTime) {
+  var taskFinishTime;
+
+  do {
+    // Assume the next task is pushed onto a stack.
+    var nextTask = taskList.pop();
+
+    // Process nextTask.
+    processTask(nextTask);
+
+    // Go again if there’s enough time to do the next task.
+    taskFinishTime = window.performance.now();
+  } while (taskFinishTime - taskStartTime < 3);
+
+  if (taskList.length > 0)
+    requestAnimationFrame(processTaskList);
+
+}
+```
+
+ensure that the user knows that a task is being processed, either by using a
+progress or activity indicator.
+
+[Optimize JavaScript Execution](https://developers.google.com/web/fundamentals/performance/rendering/optimize-javascript-execution)
