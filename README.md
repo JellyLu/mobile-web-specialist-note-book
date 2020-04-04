@@ -44,9 +44,13 @@ img {
 
 - Using the `srcset` attribute
 
-The goal is to get the browser to fetch the version of the image with the smallest dimensions that is still bigger than the final display size of the image.
+The goal is to get the browser to fetch the version of the image with the
+smallest dimensions that is still bigger than the final display size of the image.
 
-`srcset` lets us list a set of images at different resolutions for the browser to choose from when fetching the image. The browser's choice depends on the viewport dimensions, the image size relative to the viewport, the pixel density of the user's device, and the source file's dimensions.
+`srcset` lets us list a set of images at different resolutions for the browser
+to choose from when fetching the image. The browser's choice depends on the
+viewport dimensions, the image size relative to the viewport, the pixel density
+of the user's device, and the source file's dimensions.
 
 ```
 // On a 1x display, the browser fetches sfo-500_small.jpg when the
@@ -81,9 +85,15 @@ The goal is to get the browser to fetch the version of the image with the smalle
     images/sfo-800_medium.jpg  800w,
     images/sfo-500_small.jpg   500w
   "
-  sizes="(max-width: 700px) 90vw, 50vw"
+  sizes="(max-width: 800px) 50vw, 100vw"
 />
 ```
+
+`sizes="(min-width: 800px) 50vw, 100vw"`
+
+Meaning: “If the browser window is wider than 800px, this image is probably
+going to be displayed about half the size of that. If it’s smaller, it’ll
+probably be full-width.”
 
 [@media](https://developer.mozilla.org/en-US/docs/Web/CSS/@media)
 
@@ -372,15 +382,6 @@ so the new service worker is installed.
 Since only one service worker can be active at a time (for a given scope),
 even though the new service worker is installed, it isn't activated until
 the existing service worker is no longer in use.
-By closing all pages under the old service worker's control,
-we are able to activate the new service worker.
-
-The browser detects a byte difference between the new and existing
-service worker file (because of the added comment),
-so the new service worker is installed.
-Since only one service worker can be active at a time (for a given scope),
-even though the new service worker is installed,
-it isn't activated until the existing service worker is no longer in use.
 By closing all pages under the old service worker's control,
 we are able to activate the new service worker.
 
@@ -1072,7 +1073,9 @@ event.waitUntil(
 
 - Use existing data to pre-populate fields and be sure to enable autofill.
 
-Make sure your forms have no repeated actions, only as many fields as necessary, and take advantage of autofill, so that users can easily complete forms with pre-populated data.
+Make sure your forms have no repeated actions, only as many fields as necessary,
+and take advantage of autofill, so that users can easily complete forms with
+pre-populated data.
 
 - Use clearly-labeled progress bars to help users get through multi-part forms.
 
