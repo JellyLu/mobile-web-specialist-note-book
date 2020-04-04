@@ -1505,3 +1505,25 @@ ensure that the user knows that a task is being processed, either by using a
 progress or activity indicator.
 
 [Optimize JavaScript Execution](https://developers.google.com/web/fundamentals/performance/rendering/optimize-javascript-execution)
+
+###Reduce the Scope and Complexity of Style Calculations
+
+- Reduce the complexity of your selectors; use a class-centric methodology like BEM.
+- Reduce the number of elements on which style calculation must be calculated.
+
+```
+// bad example
+.box:nth-last-child(-n+1) .title {
+  /* styles */
+}
+```
+
+```
+// good example
+.final-box-title {
+  /* styles */
+}
+```
+
+[BEM (Block, Element, Modifier)](https://en.bem.info)
+[Style Invalidation in Blink](https://docs.google.com/document/d/1vEW86DaeVs4uQzNFI5R-_xS9TcS1Cs_EUsHRSgCHGu8/view)
