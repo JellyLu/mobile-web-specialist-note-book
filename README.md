@@ -22,6 +22,8 @@ Mobile Web Specialist Certification Notes
 @media screen and (max-width: 48rem)
 ```
 
+[When to Use Em vs. Rem](https://webdesign.tutsplus.com/tutorials/comprehensive-guide-when-to-use-em-vs-rem--cms-23984)
+
 - Using Flexbox
 
 [A Complete Guide to Flexbox](https://css-tricks.com/snippets/css/a-guide-to-flexbox/)
@@ -108,6 +110,35 @@ The goal is to get the browser to fetch the version of the image with the smalle
 [source MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/source)
 
 [Responsive Images: If you're just changing resolutions, use srcset](https://css-tricks.com/responsive-images-youre-just-changing-resolutions-use-srcset/)
+
+## media
+
+```
+<video controls width="400" height="400"
+       autoplay loop muted
+       poster="poster.png">
+  <source src="rabbit320.mp4" type="video/mp4">
+  <source src="rabbit320.webm" type="video/webm">
+  <track kind="subtitles" src="subtitles_en.vtt" srclang="en"> //
+  <p>Your browser doesn't support HTML video. Here is a <a href="rabbit320.mp4">link to the video</a> instead.</p>
+</video>
+```
+
+```
+<audio controls>
+  <source src="viper.mp3" type="audio/mp3">
+  <source src="viper.ogg" type="audio/ogg">
+  <p>Your browser doesn't support HTML5 audio. Here is a <a href="viper.mp3">link to the audio</a> instead.</p>
+</audio>
+```
+
+```
+// Restarting media playback
+const mediaElem = document.getElementById("my-media-element");
+mediaElem.load();
+```
+
+[Video and audio content](https://developer.mozilla.org/en-US/docs/Learn/HTML/Multimedia_and_embedding/Video_and_audio_content)
 
 # Fetch API
 
